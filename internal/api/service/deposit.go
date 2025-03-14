@@ -1,19 +1,26 @@
 package service
 
-import "context"
+import (
+	"context"
+	"log"
+)
 
 type DepositRequest struct {
-	UserId   int64   `json:"user_id"`
-	Amount   float64 `json:"amount"`
-	Currency string  `json:"currency"`
+	UserId string  `json:"user_id"`
+	Amount float64 `json:"amount"`
 }
 
 type DepositResponse struct {
-	Amount   float64 `json:"amount,omitempty"`
-	Currency string  `json:"currency,omitempty"`
-	Error    error   `json:"error,omitempty"`
+	Amount float64 `json:"amount,omitempty"`
 }
 
-func (a *AccountService) Deposit(ctx context.Context, req *DepositRequest) *DepositResponse {
-
+func (a *AccountServiceImpl) Deposit(ctx context.Context, req *DepositRequest) (*DepositResponse, error) {
+	err := a.PostgreDal.Deposit(ctx, req.UserId, req.Amount)
+	if err != nil {
+		log.Printf("[AccountServiceImpl][Deposit] deposit failed, dbErr: %v", err)
+		return nil, err
+	}
+	return &DepositResponse{
+		Amount: req.Amount,
+	}, nil
 }
