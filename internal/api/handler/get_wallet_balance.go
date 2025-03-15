@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func GetAccountBalance(ctx context.Context) gin.HandlerFunc {
+func GetWalletBalance(ctx context.Context) gin.HandlerFunc {
 	return func(c *gin.Context) {
 
 	}

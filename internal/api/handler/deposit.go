@@ -31,7 +31,7 @@ func (a *AccountController) Deposit(ctx context.Context) gin.HandlerFunc {
 			})
 			return
 		}
-		
+
 		log.Printf("[AccountController][Deposit] success resp: %v", util.SafeJsonDump(resp))
 		c.JSON(http.StatusOK, resp)
 	}

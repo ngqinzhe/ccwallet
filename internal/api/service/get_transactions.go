@@ -14,10 +14,9 @@ type GetTransactionHistoryRequest struct {
 }
 
 type GetTransactionHistoryResponse struct {
-	Events []*model.Event `json:"events,omitempty"`
-	Error  error          `json:"error"`
+	Transactions []*model.Transaction `json:"transactions,omitempty"`
 }
 
-func (a *AccountServiceImpl) GetTransactionHistory(ctx context.Context, req *GetTransactionHistoryRequest) (*GetTransactionHistoryResponse, error) {
+func (a *AccountServiceImpl) GetTransactions(ctx context.Context, req *GetTransactionHistoryRequest) (*GetTransactionHistoryResponse, error) {
 
 }

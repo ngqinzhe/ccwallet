@@ -3,7 +3,9 @@ package db
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"log"
+	"time"
 
 	_ "github.com/lib/pq"
 	"github.com/ngqinzhe/ccwallet/internal/model"
@@ -13,8 +15,9 @@ type PostgreDal interface {
 	Deposit(ctx context.Context, userId string, amount float64) error
 	Withdraw(ctx context.Context, userId string, amount float64) error
 	Transfer(ctx context.Context, fromUserId, toUserId string, amount float64) error
-	GetAccountBalance(ctx context.Context, userId string) (float64, error)
-	GetTransactionsHistory(ctx context.Context, userId string) ([]*model.Event, error)
+	GetWalletBalance(ctx context.Context, userId string) (float64, error)
+	GetTransactions(ctx context.Context, userId string, from, to time.Time) ([]*model.Transaction, error)
+	AddTransaction(ctx context.Context, userId, transactionType string, transactionData json.RawMessage) error
 }
 
 type PostgreDalImpl struct {
