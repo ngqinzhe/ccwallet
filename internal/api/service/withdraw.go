@@ -1,6 +1,9 @@
 package service
 
-import "context"
+import (
+	"context"
+	"log"
+)
 
 type WithdrawRequest struct {
 	UserId            string  `json:"user_id"`
@@ -10,12 +13,20 @@ type WithdrawRequest struct {
 }
 
 type WithdrawResponse struct {
-	Amount float64 `json:"amount,omitempty"`
-
-	BankAccountNumber string `json:"bank_account_number,omitempty"`
-	BankName          string `json:"bank_name,omitempty"`
-	Error             error  `json:"error,omitempty"`
+	Amount            float64 `json:"amount,omitempty"`
+	BankAccountNumber string  `json:"bank_account_number,omitempty"`
+	BankName          string  `json:"bank_name,omitempty"`
 }
 
-func (a *AccountServiceImpl) Withdraw(ctx context.Context, req *WithdrawRequest) (*WithdrawResponse, error) {
+func (w *WalletServiceImpl) Withdraw(ctx context.Context, req *WithdrawRequest) (*WithdrawResponse, error) {
+	err := w.PostgreDal.Withdraw(ctx, req.UserId, req.Amount)
+	if err != nil {
+		log.Printf("[AccountServiceImpl][Withdraw] failed to withdraw, dbErr: %v", err)
+		return nil, err
+	}
+	return &WithdrawResponse{
+		Amount:            req.Amount,
+		BankAccountNumber: req.BankAccountNumber,
+		BankName:          req.BankName,
+	}, nil
 }

@@ -4,11 +4,13 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"log"
 	"time"
 
 	_ "github.com/lib/pq"
 	"github.com/ngqinzhe/ccwallet/internal/model"
+	"github.com/ngqinzhe/ccwallet/internal/util"
 )
 
 type PostgreDal interface {
@@ -24,7 +26,11 @@ type PostgreDalImpl struct {
 	client *sql.DB
 }
 
-func NewPostgreDal(ctx context.Context) PostgreDal {
+func NewPostgreDal(ctx context.Context, config *util.PostgreSqlCredentials) PostgreDal {
+	connStr := fmt.Sprintf("user=%s dbname=%s password=%s host=localhost sslmode=disable",
+		config.Username,
+		config.Database,
+		config.Password)
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		log.Fatal("Error opening database: ", err)

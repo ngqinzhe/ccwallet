@@ -1,6 +1,9 @@
 package service
 
-import "context"
+import (
+	"context"
+	"log"
+)
 
 type TransferRequest struct {
 	FromUserId string  `json:"from_user_id"`
@@ -12,6 +15,13 @@ type TransferResponse struct {
 	Amount float64 `json:"amount,omitempty"`
 }
 
-func (a *AccountServiceImpl) Transfer(ctx context.Context, req *TransferRequest) (*TransferResponse, error) {
-
+func (w *WalletServiceImpl) Transfer(ctx context.Context, req *TransferRequest) (*TransferResponse, error) {
+	err := w.PostgreDal.Transfer(ctx, req.FromUserId, req.ToUserId, req.Amount)
+	if err != nil {
+		log.Printf("[WalletServiceImpl][Transfer] transfer failed, dbErr: %v", err)
+		return nil, err
+	}
+	return &TransferResponse{
+		Amount: req.Amount,
+	}, nil
 }

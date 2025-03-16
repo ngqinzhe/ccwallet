@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -11,28 +12,27 @@ import (
 	"github.com/ngqinzhe/ccwallet/internal/util"
 )
 
-func (a *AccountController) Deposit(ctx context.Context) gin.HandlerFunc {
+func (w *WalletController) Deposit(ctx context.Context) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		req := &service.DepositRequest{}
-		log.Printf("[AccountController][Deposit] req: %v", util.SafeJsonDump(req))
 		if err := c.BindJSON(&req); err != nil {
-			log.Printf("[AccountController][Deposit] failed to bind json, err: %v", err)
+			log.Printf("[WalletController][Deposit] failed to bind json to req, err: %v", err)
 			c.JSON(http.StatusBadRequest, model.ErrorResponse{
 				ErrorMsg: "invalid request params",
 			})
 			return
 		}
-
-		resp, err := a.AccountService.Deposit(ctx, req)
+		log.Printf("[WalletController][Deposit] req: %v", util.SafeJsonDump(req))
+		resp, err := w.WalletService.Deposit(ctx, req)
 		if err != nil {
-			log.Printf("[AccountController][Deposit] failed to deposit, err: %v", err)
+			log.Printf("[WalletController][Deposit] failed to deposit, err: %v", err)
 			c.JSON(http.StatusInternalServerError, model.ErrorResponse{
-				ErrorMsg: "internal server error",
+				ErrorMsg: fmt.Sprintf("internal server error: %v", err),
 			})
 			return
 		}
 
-		log.Printf("[AccountController][Deposit] success resp: %v", util.SafeJsonDump(resp))
+		log.Printf("[WalletController][Deposit] success resp: %v", util.SafeJsonDump(resp))
 		c.JSON(http.StatusOK, resp)
 	}
 }

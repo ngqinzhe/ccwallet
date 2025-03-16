@@ -1,0 +1,4 @@
+postgreSqlCredentials:
+  database: "cryptocom"
+  username: "qinzhe.ng"
+  password: "mypassword"

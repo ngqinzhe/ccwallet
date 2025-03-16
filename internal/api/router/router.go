@@ -8,18 +8,18 @@ import (
 	"github.com/ngqinzhe/ccwallet/internal/api/handler"
 )
 
-func Run(ctx context.Context) {
+func Run(ctx context.Context, walletController *handler.WalletController) {
 	router := gin.Default()
 	router.Use(cors.Default())
 
 	// Writes
-	router.POST("/api/v1/deposit", handler.Deposit(ctx))
-	router.POST("/api/v1/withdraw", handler.Withdraw(ctx))
-	router.POST("/api/v1/transfer", handler.Withdraw(ctx))
+	router.POST("/api/v1/deposit", walletController.Deposit(ctx))
+	router.POST("/api/v1/withdraw", walletController.Withdraw(ctx))
+	router.POST("/api/v1/transfer", walletController.Withdraw(ctx))
 
 	// Reads
-	router.GET("/api/v1/account_balance", handler.GetAccountBalance(ctx))
-	router.GET("/api/v1/transaction_history", handler.GetTransactionHistory(ctx))
+	router.GET("/api/v1/wallet_balance", walletController.GetWalletBalance(ctx))
+	router.GET("/api/v1/transactions", walletController.GetTransactions(ctx))
 
 	router.Run("localhost:8080")
 

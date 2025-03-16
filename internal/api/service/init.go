@@ -6,20 +6,20 @@ import (
 	"github.com/ngqinzhe/ccwallet/internal/db"
 )
 
-type AccountService interface {
+type WalletService interface {
 	Deposit(ctx context.Context, req *DepositRequest) (*DepositResponse, error)
 	Withdraw(ctx context.Context, req *WithdrawRequest) (*WithdrawResponse, error)
 	Transfer(ctx context.Context, req *TransferRequest) (*TransferResponse, error)
 	GetWalletBalance(ctx context.Context, req *GetWalletBalanceRequest) (*GetWalletBalanceResponse, error)
-	GetTransactions(ctx context.Context, req *GetTransactionHistoryRequest) (*GetTransactionHistoryResponse, error)
+	GetTransactions(ctx context.Context, req *GetTransactionsRequest) (*GetTransactionsResponse, error)
 }
 
-type AccountServiceImpl struct {
+type WalletServiceImpl struct {
 	PostgreDal db.PostgreDal
 }
 
-func NewAccountService(ctx context.Context, postgreDal db.PostgreDal) AccountService {
-	return &AccountServiceImpl{
+func NewWalletService(ctx context.Context, postgreDal db.PostgreDal) WalletService {
+	return &WalletServiceImpl{
 		PostgreDal: postgreDal,
 	}
 }
