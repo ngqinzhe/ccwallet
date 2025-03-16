@@ -18,7 +18,7 @@ type PostgreSqlCredentials struct {
 }
 
 func InitConfig() *Config {
-	data, err := os.ReadFile("../config/debug.yaml")
+	data, err := os.ReadFile("./internal/config/debug.yml")
 	if err != nil {
 		log.Fatalf("error reading YAML file: %v", err)
 	}

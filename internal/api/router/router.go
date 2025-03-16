@@ -13,13 +13,13 @@ func Run(ctx context.Context, walletController *handler.WalletController) {
 	router.Use(cors.Default())
 
 	// Writes
-	router.POST("/api/v1/deposit", walletController.Deposit(ctx))
-	router.POST("/api/v1/withdraw", walletController.Withdraw(ctx))
-	router.POST("/api/v1/transfer", walletController.Withdraw(ctx))
+	router.POST("/api/v1/deposit", walletController.Deposit())
+	router.POST("/api/v1/withdraw", walletController.Withdraw())
+	router.POST("/api/v1/transfer", walletController.Transfer())
 
 	// Reads
-	router.GET("/api/v1/wallet_balance", walletController.GetWalletBalance(ctx))
-	router.GET("/api/v1/transactions", walletController.GetTransactions(ctx))
+	router.GET("/api/v1/wallet_balance", walletController.GetWalletBalance())
+	router.GET("/api/v1/transactions", walletController.GetTransactions())
 
 	router.Run("localhost:8080")
 

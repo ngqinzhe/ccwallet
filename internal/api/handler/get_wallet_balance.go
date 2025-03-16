@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -12,18 +11,21 @@ import (
 	"github.com/ngqinzhe/ccwallet/internal/util"
 )
 
-func (w *WalletController) GetWalletBalance(ctx context.Context) gin.HandlerFunc {
+func (w *WalletController) GetWalletBalance() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		req := &service.GetWalletBalanceRequest{}
-		if err := c.BindJSON(&req); err != nil {
-			log.Printf("[WalletController][GetWalletBalance] failed to bind json to req, err: %v", err)
+		userId := c.Query("user_id")
+		if userId == "" {
+			log.Printf("[WalletController][GetWalletBalance] failed to get user_id from query params")
 			c.JSON(http.StatusBadRequest, model.ErrorResponse{
 				ErrorMsg: "invalid request params",
 			})
 			return
 		}
+		req := &service.GetWalletBalanceRequest{
+			UserId: userId,
+		}
 		log.Printf("[WalletController][GetWalletBalance] req: %v", util.SafeJsonDump(req))
-		resp, err := w.WalletService.GetWalletBalance(ctx, req)
+		resp, err := w.WalletService.GetWalletBalance(c.Request.Context(), req)
 		if err != nil {
 			log.Printf("[WalletController][GetWalletBalance] failed to deposit, err: %v", err)
 			c.JSON(http.StatusInternalServerError, model.ErrorResponse{

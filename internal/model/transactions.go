@@ -20,19 +20,3 @@ type Transaction struct {
 	Information string          `json:"string"`
 	CreatedAt   time.Time       `json:"created_at"`
 }
-
-type DepositTransaction struct {
-	Amount float64 `json:"amount"`
-}
-
-type WithdrawTransaction struct {
-	Amount            float64 `json:"amount"`
-	BankAccountNumber string  `json:"bank_account_number"`
-	BankName          string  `json:"bank_name"`
-}
-
-type TransferTransaction struct {
-	FromUserId int64   `json:"from_user_id"`
-	ToUserId   int64   `json:"to_user_id"`
-	Amount     float64 `json:"amount"`
-}

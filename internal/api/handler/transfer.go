@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -12,7 +11,7 @@ import (
 	"github.com/ngqinzhe/ccwallet/internal/util"
 )
 
-func (w *WalletController) Transfer(ctx context.Context) gin.HandlerFunc {
+func (w *WalletController) Transfer() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		req := &service.TransferRequest{}
 		if err := c.BindJSON(&req); err != nil {
@@ -23,7 +22,7 @@ func (w *WalletController) Transfer(ctx context.Context) gin.HandlerFunc {
 			return
 		}
 		log.Printf("[WalletController][Transfer] req: %v", util.SafeJsonDump(req))
-		resp, err := w.WalletService.Transfer(ctx, req)
+		resp, err := w.WalletService.Transfer(c.Request.Context(), req)
 		if err != nil {
 			log.Printf("[WalletController][Transfer] failed to transfer, err: %v", err)
 			c.JSON(http.StatusInternalServerError, model.ErrorResponse{

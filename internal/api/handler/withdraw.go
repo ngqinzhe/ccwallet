@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -12,7 +11,7 @@ import (
 	"github.com/ngqinzhe/ccwallet/internal/util"
 )
 
-func (w *WalletController) Withdraw(ctx context.Context) gin.HandlerFunc {
+func (w *WalletController) Withdraw() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		req := &service.WithdrawRequest{}
 		if err := c.BindJSON(&req); err != nil {
@@ -23,7 +22,7 @@ func (w *WalletController) Withdraw(ctx context.Context) gin.HandlerFunc {
 			return
 		}
 		log.Printf("[WalletController][Withdraw] req: %v", util.SafeJsonDump(req))
-		resp, err := w.WalletService.Withdraw(ctx, req)
+		resp, err := w.WalletService.Withdraw(c.Request.Context(), req)
 		if err != nil {
 			log.Printf("[WalletController][Withdraw] failed to deposit, err: %v", err)
 			c.JSON(http.StatusInternalServerError, model.ErrorResponse{

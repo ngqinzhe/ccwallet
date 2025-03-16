@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/ngqinzhe/ccwallet/internal/model"
@@ -20,7 +21,7 @@ func (p *PostgreDalImpl) Deposit(ctx context.Context, userId string, amount floa
 		}
 	}(&err)
 
-	row := tx.QueryRowContext(ctx, "SELECT balance FROM wallet WHERE user_id = ? FOR UPDATE", userId)
+	row := tx.QueryRowContext(ctx, "SELECT balance FROM public.wallet WHERE user_id = $1 FOR UPDATE", userId)
 	if row.Err() != nil {
 		return row.Err()
 	}
@@ -29,11 +30,11 @@ func (p *PostgreDalImpl) Deposit(ctx context.Context, userId string, amount floa
 		return err
 	}
 	balance += amount
-	if _, err = tx.ExecContext(ctx, "UPDATE wallet SET balance = ? WHERE user_id = ?", balance, userId); err != nil {
+	if _, err = tx.ExecContext(ctx, "UPDATE wallet SET balance = $1 WHERE user_id = $2", balance, userId); err != nil {
 		return err
 	}
 
-	if _, err = tx.ExecContext(ctx, "INSERT INTO transaction (user_id, transaction_type, transaction_data) VALUES (?, ?, ?)",
+	if _, err = tx.ExecContext(ctx, "INSERT INTO transaction (user_id, type, information) VALUES ($1, $2, $3)",
 		userId, model.TransactionType_Deposit, fmt.Sprintf("user: %s deposited %f to wallet", userId, amount)); err != nil {
 		return err
 	}
@@ -59,7 +60,7 @@ func (p *PostgreDalImpl) Withdraw(ctx context.Context, userId string, amount flo
 		}
 	}(&err)
 
-	row := tx.QueryRowContext(ctx, "SELECT balance FROM wallet WHERE user_id = ? FOR UPDATE", userId)
+	row := tx.QueryRowContext(ctx, "SELECT balance FROM public.wallet WHERE user_id = $1 FOR UPDATE", userId)
 	if row.Err() != nil {
 		return row.Err()
 	}
@@ -68,11 +69,11 @@ func (p *PostgreDalImpl) Withdraw(ctx context.Context, userId string, amount flo
 		return err
 	}
 	balance -= amount
-	if _, err = tx.ExecContext(ctx, "UPDATE wallet SET balance = ? WHERE user_id = ?", balance, userId); err != nil {
+	if _, err = tx.ExecContext(ctx, "UPDATE wallet SET balance = $1 WHERE user_id = $2", balance, userId); err != nil {
 		return err
 	}
 
-	if _, err = tx.ExecContext(ctx, "INSERT INTO transaction (user_id, transaction_type, transaction_data) VALUES (?, ?, ?)",
+	if _, err = tx.ExecContext(ctx, "INSERT INTO transaction (user_id, type, information) VALUES (?, ?, ?)",
 		userId, model.TransactionType_Withdraw, fmt.Sprintf("user: %s withdraw %f from wallet", userId, amount)); err != nil {
 		return err
 	}
@@ -100,7 +101,7 @@ func (p *PostgreDalImpl) Transfer(ctx context.Context, fromUserId, toUserId stri
 
 	var fromUserBalance, toUserBalance float64
 
-	row := tx.QueryRowContext(ctx, "SELECT balance FROM wallet WHERE user_id = ? FOR UPDATE", fromUserId)
+	row := tx.QueryRowContext(ctx, "SELECT balance FROM public.wallet WHERE user_id = $1 FOR UPDATE", fromUserId)
 	if row.Err() != nil {
 		return row.Err()
 	}
@@ -108,7 +109,7 @@ func (p *PostgreDalImpl) Transfer(ctx context.Context, fromUserId, toUserId stri
 		return err
 	}
 
-	row = tx.QueryRowContext(ctx, "SELECT balance FROM wallet WHERE user_id = ? FOR UPDATE", toUserId)
+	row = tx.QueryRowContext(ctx, "SELECT balance FROM public.wallet WHERE user_id = $1 FOR UPDATE", toUserId)
 	if row.Err() != nil {
 		return row.Err()
 	}
@@ -119,14 +120,14 @@ func (p *PostgreDalImpl) Transfer(ctx context.Context, fromUserId, toUserId stri
 	fromUserBalance -= amount
 	toUserBalance += amount
 
-	if _, err = tx.ExecContext(ctx, "UPDATE wallet SET balance = ? WHERE user_id = ?", fromUserBalance, fromUserId); err != nil {
+	if _, err = tx.ExecContext(ctx, "UPDATE wallet SET balance = $1 WHERE user_id = $2", fromUserBalance, fromUserId); err != nil {
 		return err
 	}
-	if _, err = tx.ExecContext(ctx, "UPDATE wallet SET balance = ? WHERE user_id = ?", toUserBalance, toUserId); err != nil {
+	if _, err = tx.ExecContext(ctx, "UPDATE wallet SET balance = $1 WHERE user_id = $2", toUserBalance, toUserId); err != nil {
 		return err
 	}
 
-	if _, err = tx.ExecContext(ctx, "INSERT INTO transaction (user_id, transaction_type, transaction_data) VALUES (?, ?, ?)",
+	if _, err = tx.ExecContext(ctx, "INSERT INTO transaction (user_id, type, information) VALUES (?, ?, ?)",
 		fromUserId, model.TransactionType_Withdraw, fmt.Sprintf("user: %s transfered %f from wallet to user: %s", fromUserId, amount, toUserId)); err != nil {
 		return err
 	}
@@ -141,11 +142,13 @@ func (p *PostgreDalImpl) Transfer(ctx context.Context, fromUserId, toUserId stri
 
 func (p *PostgreDalImpl) GetWalletBalance(ctx context.Context, userId string) (float64, error) {
 	var balance float64
-	row := p.client.QueryRowContext(ctx, "SELECT balance FROM wallet WHERE user_id = ?", userId)
+	row := p.client.QueryRowContext(ctx, "SELECT balance FROM public.wallet WHERE user_id = $1", userId)
 	if row.Err() != nil {
+		log.Print("fail1")
 		return 0, row.Err()
 	}
 	if err := row.Scan(&balance); err != nil {
+		log.Print("fail2")
 		return 0, err
 	}
 	return balance, nil
@@ -154,10 +157,10 @@ func (p *PostgreDalImpl) GetWalletBalance(ctx context.Context, userId string) (f
 func (p *PostgreDalImpl) GetTransactions(ctx context.Context, userId string, from, to time.Time) ([]*model.Transaction, error) {
 	var transactions []*model.Transaction
 
-	query := "SELECT * FROM transaction WHERE user_id = ?"
+	query := "SELECT * FROM transaction WHERE user_id = $1"
 	queryParams := []interface{}{userId}
 	if to.After(from) {
-		query += " AND created_at >= ? AND created_at <= ?"
+		query += " AND created_at >= $2 AND created_at <= $3"
 		queryParams = append(queryParams, from, to)
 	}
 
@@ -165,8 +168,15 @@ func (p *PostgreDalImpl) GetTransactions(ctx context.Context, userId string, fro
 	if err != nil {
 		return nil, err
 	}
-	if err := rows.Scan(&transactions); err != nil {
-		return nil, err
+	defer rows.Close()
+
+	for rows.Next() {
+		var transaction *model.Transaction
+		if err := rows.Scan(&transaction); err != nil {
+			return nil, err
+		}
+		transactions = append(transactions, transaction)
 	}
+
 	return transactions, nil
 }
