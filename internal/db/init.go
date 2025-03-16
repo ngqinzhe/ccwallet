@@ -3,7 +3,6 @@ package db
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"fmt"
 	"log"
 	"time"
@@ -19,7 +18,6 @@ type PostgreDal interface {
 	Transfer(ctx context.Context, fromUserId, toUserId string, amount float64) error
 	GetWalletBalance(ctx context.Context, userId string) (float64, error)
 	GetTransactions(ctx context.Context, userId string, from, to time.Time) ([]*model.Transaction, error)
-	AddTransaction(ctx context.Context, userId, transactionType string, transactionData json.RawMessage) error
 }
 
 type PostgreDalImpl struct {

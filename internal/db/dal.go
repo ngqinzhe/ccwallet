@@ -2,7 +2,7 @@ package db
 
 import (
 	"context"
-	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/ngqinzhe/ccwallet/internal/model"
@@ -20,7 +20,7 @@ func (p *PostgreDalImpl) Deposit(ctx context.Context, userId string, amount floa
 		}
 	}(&err)
 
-	row := tx.QueryRow("SELECT balance FROM wallet WHERE user_id = ? FOR UPDATE", userId)
+	row := tx.QueryRowContext(ctx, "SELECT balance FROM wallet WHERE user_id = ? FOR UPDATE", userId)
 	if row.Err() != nil {
 		return row.Err()
 	}
@@ -29,7 +29,12 @@ func (p *PostgreDalImpl) Deposit(ctx context.Context, userId string, amount floa
 		return err
 	}
 	balance += amount
-	if _, err = tx.Exec("UPDATE wallet SET balance = ? WHERE user_id = ?", balance, userId); err != nil {
+	if _, err = tx.ExecContext(ctx, "UPDATE wallet SET balance = ? WHERE user_id = ?", balance, userId); err != nil {
+		return err
+	}
+
+	if _, err = tx.ExecContext(ctx, "INSERT INTO transaction (user_id, transaction_type, transaction_data) VALUES (?, ?, ?)",
+		userId, model.TransactionType_Deposit, fmt.Sprintf("user: %s deposited %f to wallet", userId, amount)); err != nil {
 		return err
 	}
 
@@ -64,6 +69,11 @@ func (p *PostgreDalImpl) Withdraw(ctx context.Context, userId string, amount flo
 	}
 	balance -= amount
 	if _, err = tx.ExecContext(ctx, "UPDATE wallet SET balance = ? WHERE user_id = ?", balance, userId); err != nil {
+		return err
+	}
+
+	if _, err = tx.ExecContext(ctx, "INSERT INTO transaction (user_id, transaction_type, transaction_data) VALUES (?, ?, ?)",
+		userId, model.TransactionType_Withdraw, fmt.Sprintf("user: %s withdraw %f from wallet", userId, amount)); err != nil {
 		return err
 	}
 
@@ -116,6 +126,11 @@ func (p *PostgreDalImpl) Transfer(ctx context.Context, fromUserId, toUserId stri
 		return err
 	}
 
+	if _, err = tx.ExecContext(ctx, "INSERT INTO transaction (user_id, transaction_type, transaction_data) VALUES (?, ?, ?)",
+		fromUserId, model.TransactionType_Withdraw, fmt.Sprintf("user: %s transfered %f from wallet to user: %s", fromUserId, amount, toUserId)); err != nil {
+		return err
+	}
+
 	err = tx.Commit()
 	if err != nil {
 		return err
@@ -154,13 +169,4 @@ func (p *PostgreDalImpl) GetTransactions(ctx context.Context, userId string, fro
 		return nil, err
 	}
 	return transactions, nil
-}
-
-func (p *PostgreDalImpl) AddTransaction(ctx context.Context, userId, transactionType string, transactionData json.RawMessage) error {
-	_, err := p.client.ExecContext(ctx, "INSERT INTO transaction (user_id, transaction_type, transaction_data) VALUES (?, ?, ?)",
-		userId, transactionType, transactionData)
-	if err != nil {
-		return err
-	}
-	return nil
 }

@@ -1,7 +1,6 @@
 package model
 
 import (
-	"encoding/json"
 	"time"
 )
 
@@ -12,16 +11,14 @@ const (
 	TransactionType_Deposit = iota + 1
 	TransactionType_Withdraw
 	TransactionType_Transfer
-	TransactionType_GetAccountBalance
-	TransactionType_GetTransactionHistory
 )
 
 type Transaction struct {
-	Id              int64           `json:"id"`
-	UserId          string          `json:"user_id"`
-	TransactionType TransactionType `json:"transaction_type"`
-	TransactionData json.RawMessage `json:"transaction_data"`
-	CreatedAt       time.Time       `json:"created_at"`
+	Id          int64           `json:"id"`
+	UserId      string          `json:"user_id"`
+	Type        TransactionType `json:"type"`
+	Information string          `json:"string"`
+	CreatedAt   time.Time       `json:"created_at"`
 }
 
 type DepositTransaction struct {
