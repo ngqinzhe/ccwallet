@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"time"
@@ -73,7 +74,7 @@ func (p *PostgreDalImpl) Withdraw(ctx context.Context, userId string, amount flo
 		return err
 	}
 
-	if _, err = tx.ExecContext(ctx, "INSERT INTO transaction (user_id, type, information) VALUES (?, ?, ?)",
+	if _, err = tx.ExecContext(ctx, "INSERT INTO transaction (user_id, type, information) VALUES ($1, $2, $3)",
 		userId, model.TransactionType_Withdraw, fmt.Sprintf("user: %s withdraw %f from wallet", userId, amount)); err != nil {
 		return err
 	}
@@ -107,6 +108,9 @@ func (p *PostgreDalImpl) Transfer(ctx context.Context, fromUserId, toUserId stri
 	}
 	if err = row.Scan(&fromUserBalance); err != nil {
 		return err
+	}
+	if fromUserBalance < amount {
+		return errors.New("user has insufficient amount")
 	}
 
 	row = tx.QueryRowContext(ctx, "SELECT balance FROM public.wallet WHERE user_id = $1 FOR UPDATE", toUserId)
@@ -163,7 +167,7 @@ func (p *PostgreDalImpl) GetTransactions(ctx context.Context, userId string, fro
 		query += " AND created_at >= $2 AND created_at <= $3"
 		queryParams = append(queryParams, from, to)
 	}
-
+	query += " ORDER BY created_at DESC"
 	rows, err := p.client.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
@@ -171,8 +175,8 @@ func (p *PostgreDalImpl) GetTransactions(ctx context.Context, userId string, fro
 	defer rows.Close()
 
 	for rows.Next() {
-		var transaction *model.Transaction
-		if err := rows.Scan(&transaction); err != nil {
+		transaction := &model.Transaction{}
+		if err := rows.Scan(&transaction.Id, &transaction.UserId, &transaction.Type, &transaction.Information, &transaction.CreatedAt); err != nil {
 			return nil, err
 		}
 		transactions = append(transactions, transaction)

@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 
+	"github.com/ngqinzhe/ccwallet/internal/cache"
 	"github.com/ngqinzhe/ccwallet/internal/db"
 )
 
@@ -16,10 +17,12 @@ type WalletService interface {
 
 type WalletServiceImpl struct {
 	PostgreDal db.PostgreDal
+	RedisCache cache.RedisCache
 }
 
-func NewWalletService(ctx context.Context, postgreDal db.PostgreDal) WalletService {
+func NewWalletService(ctx context.Context, postgreDal db.PostgreDal, redisCache cache.RedisCache) WalletService {
 	return &WalletServiceImpl{
 		PostgreDal: postgreDal,
+		RedisCache: redisCache,
 	}
 }

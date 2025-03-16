@@ -17,6 +17,6 @@ type Transaction struct {
 	Id          int64           `json:"id"`
 	UserId      string          `json:"user_id"`
 	Type        TransactionType `json:"type"`
-	Information string          `json:"string"`
+	Information string          `json:"information"`
 	CreatedAt   time.Time       `json:"created_at"`
 }
