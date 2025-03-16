@@ -158,16 +158,18 @@ func (p *PostgreDalImpl) GetWalletBalance(ctx context.Context, userId string) (f
 	return balance, nil
 }
 
-func (p *PostgreDalImpl) GetTransactions(ctx context.Context, userId string, from, to time.Time) ([]*model.Transaction, error) {
+func (p *PostgreDalImpl) GetTransactions(ctx context.Context, userId string, from, to time.Time, limit, offset int) ([]*model.Transaction, error) {
 	var transactions []*model.Transaction
-
 	query := "SELECT * FROM transaction WHERE user_id = $1"
 	queryParams := []interface{}{userId}
+
+	argIndex := 2
 	if to.After(from) {
-		query += " AND created_at >= $2 AND created_at <= $3"
+		query += fmt.Sprintf(" AND created_at >= $%d AND created_at <= $%d", argIndex, argIndex+1)
 		queryParams = append(queryParams, from, to)
+		argIndex += 2
 	}
-	query += " ORDER BY created_at DESC"
+	query += fmt.Sprintf(" ORDER BY created_at DESC LIMIT $%d OFFSET $%d", argIndex, argIndex+1)
 	rows, err := p.client.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err

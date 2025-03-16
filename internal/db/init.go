@@ -17,7 +17,7 @@ type PostgreDal interface {
 	Withdraw(ctx context.Context, userId string, amount float64) error
 	Transfer(ctx context.Context, fromUserId, toUserId string, amount float64) error
 	GetWalletBalance(ctx context.Context, userId string) (float64, error)
-	GetTransactions(ctx context.Context, userId string, from, to time.Time) ([]*model.Transaction, error)
+	GetTransactions(ctx context.Context, userId string, from, to time.Time, limit, offset int) ([]*model.Transaction, error)
 }
 
 type PostgreDalImpl struct {

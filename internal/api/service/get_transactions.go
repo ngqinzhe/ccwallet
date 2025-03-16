@@ -12,6 +12,8 @@ type GetTransactionsRequest struct {
 	UserId   string    `json:"user_id"`
 	FromDate time.Time `json:"from_date,omitempty"`
 	ToDate   time.Time `json:"to_date,omitempty"`
+	Limit    *int      `json:"limit,omitempty"`
+	Offset   *int      `json:"limit,omitempty"`
 }
 
 type GetTransactionsResponse struct {
@@ -19,7 +21,14 @@ type GetTransactionsResponse struct {
 }
 
 func (w *WalletServiceImpl) GetTransactions(ctx context.Context, req *GetTransactionsRequest) (*GetTransactionsResponse, error) {
-	transactions, err := w.PostgreDal.GetTransactions(ctx, req.UserId, req.FromDate, req.ToDate)
+	limit, offset := 10, 0 // default
+	if req.Limit != nil {
+		limit = *req.Limit
+	}
+	if req.Offset != nil {
+		offset = *req.Offset
+	}
+	transactions, err := w.PostgreDal.GetTransactions(ctx, req.UserId, req.FromDate, req.ToDate, limit, offset)
 	if err != nil {
 		log.Printf("[WalletServiceImpl][GetTransactions] failed to get transactions, dbErr: %v", err)
 		return nil, err
