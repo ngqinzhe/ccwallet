@@ -44,7 +44,7 @@ Of which both I do not consider simple tasks and are rather time consuming, so I
 #### 3. Repository Structure
 The repository structure is segregated into its own components
 ```bash
-repo-name/
+ccwallet/
 │── main.go            # main server entry point
 │── internal/          # Private application code
 │    │── api/          # API layer
