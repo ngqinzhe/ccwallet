@@ -69,6 +69,10 @@ func (p *PostgreDalImpl) Withdraw(ctx context.Context, userId string, amount flo
 	if err = row.Scan(&balance); err != nil {
 		return err
 	}
+	if balance < amount {
+		return errors.New("user does not have sufficient balance to withdraw")
+	}
+
 	balance -= amount
 	if _, err = tx.ExecContext(ctx, "UPDATE wallet SET balance = $1 WHERE user_id = $2", balance, userId); err != nil {
 		return err

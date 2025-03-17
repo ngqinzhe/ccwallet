@@ -7,6 +7,7 @@ import (
 	"github.com/go-redis/redis/v8"
 )
 
+// mockgen -source=init.go -destination=../mocks/mock_cache.go -package=mocks
 type RedisCache interface {
 	Set(ctx context.Context, key string, value interface{}) error
 	Get(ctx context.Context, key string) (interface{}, error)

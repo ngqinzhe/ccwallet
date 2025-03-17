@@ -12,6 +12,7 @@ import (
 	"github.com/ngqinzhe/ccwallet/internal/util"
 )
 
+// mockgen -source=init.go -destination=../mocks/mock_dal.go -package=mocks
 type PostgreDal interface {
 	Deposit(ctx context.Context, userId string, amount float64) error
 	Withdraw(ctx context.Context, userId string, amount float64) error

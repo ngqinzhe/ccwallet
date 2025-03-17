@@ -13,7 +13,7 @@ type GetTransactionsRequest struct {
 	FromDate time.Time `json:"from_date,omitempty"`
 	ToDate   time.Time `json:"to_date,omitempty"`
 	Limit    *int      `json:"limit,omitempty"`
-	Offset   *int      `json:"limit,omitempty"`
+	Offset   *int      `json:"offset,omitempty"`
 }
 
 type GetTransactionsResponse struct {
