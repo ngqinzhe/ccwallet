@@ -9,6 +9,12 @@ import (
 
 type Config struct {
 	PostgreSqlCredentials PostgreSqlCredentials `yaml:"postgreSqlCredentials"`
+	RedisCredentials      RedisCredentials      `yaml:"redisCredentials"`
+}
+
+type RedisCredentials struct {
+	Address  string `yaml:"address"`
+	Password string `yaml:"password"`
 }
 
 type PostgreSqlCredentials struct {
@@ -18,7 +24,7 @@ type PostgreSqlCredentials struct {
 }
 
 func InitConfig() *Config {
-	data, err := os.ReadFile("./internal/config/debug.yml")
+	data, err := os.ReadFile("./config/debug.yml")
 	if err != nil {
 		log.Fatalf("error reading YAML file: %v", err)
 	}

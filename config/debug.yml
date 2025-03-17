@@ -1,0 +1,8 @@
+postgreSqlCredentials:
+  database: ""
+  username: ""
+  password: ""
+
+redisCredentials:
+  address: ""
+  password: ""

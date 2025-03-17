@@ -1,4 +1,0 @@
-postgreSqlCredentials:
-  database: "postgres"
-  username: "ngqinzhe"
-  password: "mypassword"
